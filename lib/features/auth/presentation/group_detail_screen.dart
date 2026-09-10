@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GroupDetailScreen extends StatelessWidget {
   const GroupDetailScreen({super.key});
@@ -6,9 +7,7 @@ class GroupDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const darkGreen = Color(0xFF13332B);
-    const goldenYellow = Color(0xFFE8A033);
     const oweRed = Color(0xFFD9534F);
-    const owedGreen = Color(0xFF4E8D6D);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4ECE1),
@@ -16,8 +15,8 @@ class GroupDetailScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkGreen),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -34,14 +33,13 @@ class GroupDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header: Group Icon + Title
                 Row(
                   children: [
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: goldenYellow,
+                        color: const Color(0xFFE8A033),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       alignment: Alignment.center,
@@ -50,7 +48,7 @@ class GroupDetailScreen extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -61,7 +59,7 @@ class GroupDetailScreen extends StatelessWidget {
                         Text(
                           'Flatmates',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
@@ -69,7 +67,7 @@ class GroupDetailScreen extends StatelessWidget {
                         SizedBox(height: 2),
                         Text(
                           'Tanvir, Rafi, Mim',
-                          style: TextStyle(color: Colors.black45, fontSize: 13),
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -79,58 +77,53 @@ class GroupDetailScreen extends StatelessWidget {
                 const Text(
                   'Total spent  \$640',
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 const Divider(height: 1, color: Colors.black12),
                 const SizedBox(height: 12),
-
-                // Transactions List
                 Expanded(
                   child: ListView(
                     children: [
-                      _buildTransactionTile(
-                        dateDay: '04',
-                        dateMonth: 'SEP',
+                      _buildExpenseTile(
+                        day: '04',
+                        month: 'SEP',
                         title: 'Groceries',
                         subtitle: 'Paid by Rafi · split 3 ways',
-                        status: 'You owe',
                         amount: '\$43',
-                        statusColor: oweRed,
+                        amountStatus: 'You owe',
+                        amountColor: oweRed,
                       ),
-                      const Divider(height: 24, color: Colors.black12),
-                      _buildTransactionTile(
-                        dateDay: '02',
-                        dateMonth: 'SEP',
+                      _buildExpenseTile(
+                        day: '02',
+                        month: 'SEP',
                         title: 'Rent – September',
                         subtitle: 'Paid by you · split 3 ways',
-                        status: "You're owed",
                         amount: '\$210',
-                        statusColor: owedGreen,
+                        amountStatus: "You're owed",
+                        amountColor: const Color(0xFF4E8D6D),
                       ),
-                      const Divider(height: 24, color: Colors.black12),
-                      _buildTransactionTile(
-                        dateDay: '29',
-                        dateMonth: 'AUG',
+                      _buildExpenseTile(
+                        day: '29',
+                        month: 'AUG',
                         title: 'Internet bill',
                         subtitle: 'Paid by Mim · split 3 ways',
-                        status: 'You owe',
                         amount: '\$20',
-                        statusColor: oweRed,
+                        amountStatus: 'You owe',
+                        amountColor: oweRed,
                       ),
                     ],
                   ),
                 ),
-
-                // Settle Up Button
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => context.push('/settle-up'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: darkGreen,
                       shape: RoundedRectangleBorder(
@@ -141,9 +134,9 @@ class GroupDetailScreen extends StatelessWidget {
                     child: const Text(
                       'Settle Up',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
                   ),
@@ -156,80 +149,80 @@ class GroupDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionTile({
-    required String dateDay,
-    required String dateMonth,
+  Widget _buildExpenseTile({
+    required String day,
+    required String month,
     required String title,
     required String subtitle,
-    required String status,
     required String amount,
-    required Color statusColor,
+    required String amountStatus,
+    required Color amountColor,
   }) {
-    return Row(
-      children: [
-        Column(
-          children: [
-            Text(
-              dateDay,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            Text(
-              dateMonth,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.black45,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Column(
             children: [
               Text(
-                title,
+                day,
                 style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 2),
               Text(
-                subtitle,
-                style: const TextStyle(color: Colors.black45, fontSize: 12),
+                month,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
             ],
           ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              status,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
             ),
-            Text(
-              amount,
-              style: TextStyle(
-                color: statusColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amountStatus,
+                style: TextStyle(fontSize: 10, color: amountColor),
               ),
-            ),
-          ],
-        ),
-      ],
+              const SizedBox(height: 2),
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: amountColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

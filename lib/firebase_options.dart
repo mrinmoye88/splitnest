@@ -57,7 +57,6 @@ class DefaultFirebaseOptions {
     projectId: 'splitnest-23d84',
     storageBucket: 'splitnest-23d84.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBAWkUjnctEGzbXKdgyMH_XHd7PSg3eYr0',
     appId: '1:57261079447:ios:dd2758eb1d60a424fca2d2',
@@ -67,7 +66,6 @@ class DefaultFirebaseOptions {
     iosClientId: '57261079447-3qh3soum68uc9ag00oi366b3ngnt367h.apps.googleusercontent.com',
     iosBundleId: 'com.example.splitnest',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyBAWkUjnctEGzbXKdgyMH_XHd7PSg3eYr0',
     appId: '1:57261079447:ios:dd2758eb1d60a424fca2d2',

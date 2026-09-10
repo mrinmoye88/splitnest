@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/signup_screen.dart';
 import '../features/auth/presentation/group_detail_screen.dart';
+import '../features/auth/presentation/add_expense_screen.dart';
+import '../features/auth/presentation/bills_reminders_screen.dart';
+import '../features/auth/presentation/settle_up_screen.dart';
+import '../features/auth/presentation/chores_screen.dart';
+import '../features/auth/presentation/dispute_log_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -38,11 +44,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/group-detail',
         builder: (context, state) => const GroupDetailScreen(),
       ),
+      GoRoute(
+        path: '/add-expense',
+        builder: (context, state) => const AddExpenseScreen(),
+      ),
+      GoRoute(
+        path: '/bills-reminders',
+        builder: (context, state) => const BillsRemindersScreen(),
+      ),
+      GoRoute(
+        path: '/settle-up',
+        builder: (context, state) => const SettleUpScreen(),
+      ),
+      GoRoute(
+        path: '/chores',
+        builder: (context, state) => const ChoresScreen(),
+      ),
+      GoRoute(
+        path: '/dispute-log',
+        builder: (context, state) => const DisputeLogScreen(),
+      ),
     ],
   );
 });
 
-// Updated Dashboard UI
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -72,7 +97,7 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
+                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -83,7 +108,7 @@ class DashboardScreen extends ConsumerWidget {
                                   'Hello,',
                                   style: TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 16,
+                                    fontSize: 15,
                                   ),
                                 ),
                                 IconButton(
@@ -96,26 +121,32 @@ class DashboardScreen extends ConsumerWidget {
                               'Mrinmoye Rahman',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 26,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
-                                  child: _buildBalanceBox(
-                                    'You are owed',
-                                    '\$125',
-                                    owedGreen,
+                                  child: GestureDetector(
+                                    onTap: () => context.push('/settle-up'),
+                                    child: _buildBalanceBox(
+                                      'You are owed',
+                                      '\$125',
+                                      owedGreen,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: _buildBalanceBox(
-                                    'You owe',
-                                    '\$43',
-                                    oweRed,
+                                  child: GestureDetector(
+                                    onTap: () => context.push('/settle-up'),
+                                    child: _buildBalanceBox(
+                                      'You owe',
+                                      '\$43',
+                                      oweRed,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -123,10 +154,34 @@ class DashboardScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildQuickActionButton(
+                              icon: Icons.receipt_long_outlined,
+                              label: 'Bills',
+                              onTap: () => context.push('/bills-reminders'),
+                            ),
+                            _buildQuickActionButton(
+                              icon: Icons.cleaning_services_outlined,
+                              label: 'Chores',
+                              onTap: () => context.push('/chores'),
+                            ),
+                            _buildQuickActionButton(
+                              icon: Icons.flag_outlined,
+                              label: 'Disputes',
+                              onTap: () => context.push('/dispute-log'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Expanded(
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                           decoration: const BoxDecoration(
                             color: Color(0xFFFAF7F2),
                             borderRadius: BorderRadius.only(
@@ -145,7 +200,7 @@ class DashboardScreen extends ConsumerWidget {
                                   color: Colors.black87,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Expanded(
                                 child: ListView(
                                   children: [
@@ -192,7 +247,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   Positioned(
                     right: 20,
-                    bottom: 24,
+                    bottom: 20,
                     child: Container(
                       width: 52,
                       height: 52,
@@ -209,7 +264,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       child: IconButton(
                         icon: const Icon(Icons.add, color: Colors.black, size: 28),
-                        onPressed: () {},
+                        onPressed: () => context.push('/add-expense'),
                       ),
                     ),
                   ),
@@ -222,9 +277,36 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  static Widget _buildQuickActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFFE8A033), size: 20),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
   static Widget _buildBalanceBox(String label, String amount, Color amountColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF1E4238),
         borderRadius: BorderRadius.circular(16),
@@ -234,14 +316,14 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: const TextStyle(color: Colors.white60, fontSize: 11),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             amount,
             style: TextStyle(
               color: amountColor,
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -269,8 +351,8 @@ class DashboardScreen extends ConsumerWidget {
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: badgeColor,
               borderRadius: BorderRadius.circular(14),
@@ -281,11 +363,11 @@ class DashboardScreen extends ConsumerWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +376,7 @@ class DashboardScreen extends ConsumerWidget {
                   name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 14,
                     color: Colors.black87,
                   ),
                 ),
@@ -314,12 +396,12 @@ class DashboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   color: amountColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                  fontSize: 14,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.black45, fontSize: 11),
+                style: const TextStyle(color: Colors.black45, fontSize: 10),
               ),
             ],
           ),
