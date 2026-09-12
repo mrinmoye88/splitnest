@@ -1,171 +1,153 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/dispute_model.dart';
-import '../../../providers/firestore_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DisputeLogScreen extends ConsumerWidget {
+class DisputeLogScreen extends StatelessWidget {
   const DisputeLogScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    const darkGreen = Color(0xFF13332B);
-    const oweRed = Color(0xFFD9534F);
-
-    final disputesAsync = ref.watch(disputesStreamProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4ECE1),
+      backgroundColor: const Color(0xFFF7F4EE),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black87),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.chevron_left, color: Colors.black87, size: 22),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
         title: const Text(
           'Dispute Log',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
       body: SafeArea(
-        child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF7F2),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: darkGreen, width: 2),
-            ),
-            child: Stack(
-              children: [
-                disputesAsync.when(
-                  data: (disputes) {
-                    if (disputes.isEmpty) {
-                      return const Center(child: Text('No disputes logged yet.'));
-                    }
-                    return ListView.separated(
-                      itemCount: disputes.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final dispute = disputes[index];
-                        final isOpen = dispute.status.toLowerCase() == 'open';
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('disputes').snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                        return _buildDisputeCard(
-                          title: dispute.title,
-                          reason: dispute.reason,
-                          footer: dispute.footerText,
-                          status: dispute.status,
-                          statusBgColor: isOpen ? const Color(0xFFFDE8E4) : const Color(0xFFE2F0D9),
-                          statusTextColor: isOpen ? oweRed : const Color(0xFF4E8D6D),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(child: Text('Error: $err')),
+            final docs = snapshot.data?.docs ?? [];
+
+            if (docs.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No disputes recorded.',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
+              );
+            }
 
-                // Floating Flag Button
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: oweRed,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.flag, color: Colors.white, size: 24),
-                      onPressed: () {},
-                    ),
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final data = docs[index].data() as Map<String, dynamic>;
+
+                final String title = data['title']?.toString() ?? 'Dispute';
+                final String reason = data['reason']?.toString() ?? '';
+                final String status = data['status']?.toString() ?? 'open';
+                final String actionBy = data['actionBy']?.toString() ?? 'User';
+                final String date = data['date']?.toString() ?? '';
+
+                final bool isOpen = status.trim().toLowerCase() == 'open';
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Badge (Open / Resolved)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isOpen
+                                  ? const Color(0xFFFDE8E5)
+                                  : const Color(0xFFE2F3E9),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              isOpen ? 'Open' : 'Resolved',
+                              style: TextStyle(
+                                color: isOpen
+                                    ? const Color(0xFFD9534F)
+                                    : const Color(0xFF43A047),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        reason,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isOpen
+                            ? 'Flagged by $actionBy · $date'
+                            : 'Resolved by $actionBy · $date',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
-      ),
-    );
-  }
-
-  Widget _buildDisputeCard({
-    required String title,
-    required String reason,
-    required String footer,
-    required String status,
-    required Color statusBgColor,
-    required Color statusTextColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: statusTextColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            reason,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            footer,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.black38,
-            ),
-          ),
-        ],
       ),
     );
   }
